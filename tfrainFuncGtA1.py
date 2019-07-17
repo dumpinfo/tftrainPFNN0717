@@ -155,6 +155,7 @@ for epoch in range(training_epochs):
     
     #save model and weights
     save_path = saver.save(sess, "training/model/model.ckpt")
+    '''
     PFNN.save_network((sess.run(P0.alpha), sess.run(P1.alpha), sess.run(P2.alpha)), 
                       (sess.run(P0.beta), sess.run(P1.beta), sess.run(P2.beta)), 
                       50, 
@@ -170,7 +171,7 @@ for epoch in range(training_epochs):
                           (sess.run(P0.beta), sess.run(P1.beta), sess.run(P2.beta)), 
                           50, 
                           path_human)
-      
+    '''  
 print('Learning Finished!')
 #-----------------------------above is model training----------------------------------
 
