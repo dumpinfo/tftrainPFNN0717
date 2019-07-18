@@ -61,20 +61,19 @@ def assign_to_device(device, ps_device='/cpu:0'):
     return _assign
 
     
-def PFNNet(X_nn, keep_prob):
     
 
-def PFNNet1(X_nn, keep_prob):
-  #with tf.variable_scope('ConvNet', reuse=reuse):
-     ####parameter of nn                                                                                           
-                                                                              
+def PFNNet(X_nn, keep_prob, reuse):
+  with tf.variable_scope('PfDevNet', reuse = reuse):
+     ####parameter of nn                             
      nslices = 4                             # number of control points in phase function                               
      phase = X_nn[:,-1]                      #phase                                                                     
       
      P0 = PFNNParameter((nslices, 512, Xdim-1), rng, phase, 'wb0')
      P1 = PFNNParameter((nslices, 512, 512), rng, phase, 'wb1')
      P2 = PFNNParameter((nslices, Ydim, 512), rng, phase, 'wb2')                                                   
-                                                                                                                                            
+     
+     print("test~~~:",P0)     
      H0 = X_nn[:,:-1] 
      H0 = tf.expand_dims(H0, -1)       
      H0 = tf.nn.dropout(H0, keep_prob=keep_prob )
@@ -151,7 +150,8 @@ with tf.device('/cpu:0'):
     # tf Graph input
     X_nn = tf.placeholder(tf.float32, [None, Xdim], name='x-input')
     Y_nn = tf.placeholder(tf.float32, [None, Ydim], name='y-input')
-
+    keep_prob = tf.placeholder(tf.float32)
+    
     # Loop over all GPUs and construct their own computation graph
     for i in range(num_gpus):
         with tf.device(assign_to_device('/gpu:{}'.format(i), ps_device='/cpu:0')):
@@ -159,8 +159,8 @@ with tf.device('/cpu:0'):
             _xx = X_nn[i * batch_size: (i+1) * batch_size]
             _yy = Y_nn[i * batch_size: (i+1) * batch_size]
 
-            keep_prob = tf.placeholder(tf.float32)
-            H3 = PFNNet( _xx, keep_prob)
+            
+            H3 = PFNNet( _xx, keep_prob , reuse = reuse_vars)
             loss_op = tf.reduce_mean(tf.square(_yy - H3)) 
             #optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
             optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
